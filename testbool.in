@@ -1,0 +1,4 @@
+if (NOT Match(#M4,#M5) OR Height(#M12) == 6 AND  Wellformed(M) OR Match(#M4,#M5) AND  Wellformed(M))
+
+ Draw(#M6)
+ endif
