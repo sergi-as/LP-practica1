@@ -163,11 +163,18 @@ mountains: (assign | condic | draw | iter | complete)* << #0 = createASTlist(_si
 //...
 
 //asignaciones de Mx is .....
+
+
 assign: ID IS^ (expr|pv);
 //separado para tener la jerarquia en el arbol
-expr: (part|other)+ (CONC^ (part|other|pv))*;// una sin concat y las siguientes si
+expr: (part|other) (CONC^ (part2|other|pv))*;// una sin concat y las siguientes si
 /*TODO: AHORA CUALQUIER COMBINACION VALE SOLO TIENE QUE ACEPTAR LAS CORRECTAS*/
-part: NUM (STAR^ (UP|DOWN|PEAK)|); //numero,estrella y tipo de parte
+part: NUM (STAR^ (UP|DOWN|PEAK)|);   //numero,estrella y tipo de parte
+part2:NUM STAR^ (UP|DOWN|PEAK);
+
+
+
+//voy a mejorar esta parte
 other: SHARP! ID; // #Mx
 
 pv: (PEAK^|VALLEY^)LPAR! (NUM|calc) COMA! (NUM|calc) COMA! (NUM|calc) RPAR!; //peak valley
@@ -184,16 +191,16 @@ condic: IF^ LPAR!  boole RPAR! mountains ENDIF!;
 iter: ITER^ LPAR!  boole RPAR! mountains ENDWHILE!;
 
 
-//boole: ( (NOT|) boole2) ((NOT|) boole2)*
-//boole2:
-//TODO: no se definir prioridad de and,or,not sin liarlo todo
-boole: ( (NOT^|) booleaux1)+ ( (AND^|OR^) (NOT^|) booleaux1)*;
-booleaux1: func|heigh (LESS^|MORE^|EQUALS^) NUM;
+
 /*
-boole: ( (NOT^|) booleaux1)+ ( booleaux1 (NOT^|) booleaux1)*;
-booleaux1: (OR^|booleaux2);
-booleaux2:  (AND^|booleaux3);
-booleaux3: (func|heigh) (LESS^|MORE^|EQUALS^) NUM; */
+boole: ( (NOT^|) booleaux1) ( (AND^|OR^) (NOT^|) booleaux1)*;
+booleaux1: func|heigh (LESS^|MORE^|EQUALS^) NUM;
+*/
+
+boole:  (NOT^|) boolatom  boolor;
+boolor: ((OR^ boolatom)|booland)*;
+booland:  (AND^ boolatom);
+boolatom: func|heigh (LESS^|MORE^|EQUALS^) NUM;
 
 
 draw: DRAW^ LPAR! expr RPAR!;
