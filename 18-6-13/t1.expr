@@ -1,0 +1,12 @@
+Ruta1 := Tarragona Barcelona 100
+Ruta2 := Girona Barcelona 105
+Ruta3 := Barcelona Igualada 70
+Ruta4 := Igualada Lleida 95
+Ruta5 := Lleida LaSeuDUrgell 130
+Ruta6 := LaSeuDUrgell Andorra 20
+Ruta7 := Barcelona Berga 110
+Ruta8 := Berga Puigcerda 51
+Ruta9 := Puigcerda LaSeuDUrgell 48
+
+Ruta10 := Ruta3 + Ruta4
+Ruta11 := Ruta1 + (Ruta10 + Ruta5 | Ruta7 + Ruta8 + Ruta9)

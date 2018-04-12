@@ -1,0 +1,1 @@
+(s (ruta Ruta11 := (expr (expr Ruta1) + (expr ( (expr (expr (expr Ruta10) + (expr Ruta5)) | (expr (expr (expr Ruta7) + (expr Ruta8)) + (expr Ruta9))) )))))

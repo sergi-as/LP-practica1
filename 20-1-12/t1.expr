@@ -1,0 +1,6 @@
+module error (input a, input b, input c, input d, input e,
+output x, output y)
+xor2 (a, b, x);
+x = c and d;
+y = not d;
+endmodule
