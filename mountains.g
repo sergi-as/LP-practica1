@@ -14,6 +14,16 @@ typedef struct {
   string text;
 } Attrib;
 
+
+// compilad con c++11
+
+/* stuct pensada para soportar tipos
+ * que el valor siempre sea un string me permite trabajar con facilidad a menos que
+ * una montaña tenga un componente de un valor con 2 o mas cifras
+ * pero hasta casi acabar la practica con los ultimos ejemplos, no consideré el caso
+ *
+ * uso u p d en vez de / - \  Por los problemas que me daba el \ como char
+*/
 typedef struct{
     string value;
     string type;
@@ -37,8 +47,8 @@ AST* createASTnode(Attrib* attr, int ttype, char *textt);
 #include <string>
 //global structures
 AST *root;
-map <string,string> mont;
-map <string,int> var;
+map <string,string> mont; //para guardar las montañanas
+map <string,int> var; //para guardar variables locales
 
 // function to fill token information
 void zzcr_attr(Attrib *attr, int type, char *text) {
@@ -115,31 +125,22 @@ void ASTPrint(AST *a) {
   }
 }
 
-/* intento 1: formato de  montaña 1u 2p 3d
- *
- *
- *
- */
 
 //funciones del programa
-char ita(int a){return '0'+a;}
-//this was a mistake but its too late
+
+//forma de arreglar el haber guardado numeros en strings
+//modificar la i en esta funcion me permite modificar el resto del codigo lo minmo posible
 int ati(string s,int & i){
     string n="";
-    //cout<<"tespeta4: i:"<<i<<" s.size() "<<s.size()<<endl;
+
     while (i<s.size() and not(s[i]=='p' or s[i]=='u' or s[i]=='d')){
-       // cout<<"extra: i,n:"<<i<<' '<<n<<endl;
-       // if (s.size()>31)cout<<"dafuk"<<s[30]<<endl;
-        //if (i==30) cout<<"me peta con: n:"<<n<<" de size: "<<n.size()<<" concatenado con el char s[i]: "<<s[i]<<" el resultado de '0'-s[i]: "<<'0'-s[i]<<endl;
         n+=s[i];
         i++;
-       // cout<<"extra2: i,n:"<<i<<' '<<n<<endl;
     }
-   // cout<<"tespeta5"<<endl;
     i--;
     return stoi(n);
 }
-int nlength(string s,int i){
+int nlength(string s,int i){ //devuelve el tamaño en cifras de un numero
     int l=0;
     while (i!=s.size() and not(s[i]=='p' or s[i]=='u' or s[i]=='d')){
         i++;
@@ -183,6 +184,10 @@ bool wellformed(string m){
 }
 //solo complete si no esta wellformed
 string complete(string ma){
+    if (wellformed(ma)){
+        cout<<"ERROR En complete. La montaña ya esta completa";
+        return ma;
+    }
     string m=ma;
     if (m.size()==2){
         char c=m[0];
@@ -198,7 +203,6 @@ string complete(string ma){
 }
 
 int height (string m){
-    //cout<<"dentro de heigh con valor:"<<m<<endl;
     int max,min,curr;
     max=min=curr=0;
 
@@ -215,7 +219,6 @@ int height (string m){
 
 
     }
-   // cout<<"max:"<<max<<"min:"<<min<<endl;
     if (min>=0) return max;
     else return max+(-min);
 }
@@ -227,7 +230,6 @@ int height(string m,int& ma,int& length){
     length=0;
 
     for (int i=0;i<m.size();i+=2){
-        //cout<<"length: "<<length<<"num"<<ati(m[i])<<endl;
         int at=ati(m,i);
         length+=at;
         int l=nlength(m,i);
@@ -242,7 +244,6 @@ int height(string m,int& ma,int& length){
 
 
     }
-   // cout<<"max:"<<max<<"min:"<<min<<endl;
     ma=max;
     if (min>=0) return max;
     else return max+(-min);
@@ -257,19 +258,14 @@ void drawmat(const vector< vector<char> > & map ){
     }
 }
 
-//TODO: un D seguido de U o al reves me jode el dibujo, pruebalo
+//me gusta ver montañas bonitas y he hecho el esfuerzo extra de hacer esta funcion
 void drawi(string m,int h,int l,int ini){
     vector< vector<char> > map(h+2, vector<char>(l,' '));
     int x=0;
     int y=ini;
-    //cout<<"size:"<<m.size()<<endl;
     for (int i=0;i<m.size();i+=2){
-        //cout<<"tespeta1"<<endl;
         int le=nlength(m,i);
-        //cout<<"tespeta2: "<<le<<endl;
         int n=ati(m,i);
-        //cout<<"tespeta3"<<endl;
-        //cout<<i<<' '<<m[i+1]<<' '<<n<<endl;
         switch(m[i+1]){
             case 'u':
                 for (int j=0;j<n;j++){
@@ -280,17 +276,12 @@ void drawi(string m,int h,int l,int ini){
                 if (m.size()>i+2+nlength(m,i+2) and m[i+2+nlength(m,i+2)]=='d')y++;
                 break;
             case 'p':
-                //cout<<"nooo0"<<' '<<n<<endl;
                 for (int j=0;j<n;j++){
-                   // cout<<"map leng "<<map[y].size()<<endl;
-                    //cout<<"j"<<j<<" x "<<x<<" y "<<y<<endl;
-                    //cout<<" m ap "<<map[y][x]<<endl;
                     map[y][x]='-';
                     x++;
                 }
                 if (m[i-le]=='u')y++;
                 else y--;
-               // cout<<"noo2"<<endl;
                 break;
             default://case 'd
                 for (int j=0;j<n;j++){
@@ -309,7 +300,6 @@ void drawi(string m,int h,int l,int ini){
 void draw(string mountain){
     int ma,l;
     int h=height(mountain,ma,l);
-    //cout<<"petaya="<<endl;
     drawi(mountain,h,l,ma);
 }
 
@@ -335,7 +325,7 @@ element evaluate(AST *a) {
         e.value=to_string(sum);
 
     }
-    else if (a->kind == "id"){ e.value=a->text; e.type="id";} //todo decidir como gestiono id, decido aqui tipo o en execute asi como que hago con draw
+    else if (a->kind == "id"){ e.value=a->text; e.type="id";}
     else if (a->kind == "*"){
         //el de la posicion 0, arriba en el dibujo
         element r,l;
@@ -399,8 +389,6 @@ element evaluate(AST *a) {
         element r,l;
         r=evaluate(child(a,0));
         l=evaluate(child(a,1));
-        //   cout<<endl<<"in AND with r ty: "<<r.type<< " and l ty: "<<l.type<<endl;
-        //  cout<<endl<<"in AND with r value: "<<r.value<< " and l value: "<<l.value<<endl;
         if (l.type=="bool"){
             if (l.value=="true") bl=true;
             else bl=false;
@@ -409,14 +397,11 @@ element evaluate(AST *a) {
             if (r.value=="true") br=true;
             else br=false;
         }
-        //  cout<<"---br:"<<br<<"-bl:"<<bl<<endl;
         result=br and bl;
         if (result) e.value="true";
         else e.value="false";
-        // cout<<"end AND with e.value"<<e.value;
     }
     else if (a->kind=="OR"){
-        //cout<<"estoy en or"<<endl;
         e.type=="bool";
         bool result,br,bl;
         element r,l;
@@ -436,15 +421,12 @@ element evaluate(AST *a) {
 
     }
     else if (a->kind=="NOT"){
-        //  cout<<"estoy en not"<<endl;
         e.type="bool";
         element e1=evaluate(child(a,0));
-        //  cout<<"e1 type: "<<e1.type<<" e1 val: "<<e1.value<<endl;
         if (e1.type=="bool"){
             if (e1.value=="true")e.value="false";
             else e.value="true";
         }
-        //  cout<<"salgo de not: "<<e1.value<<" "<<e.value<<endl;
     }
     else if (a->kind=="<"){
         e.type="bool";
@@ -452,7 +434,6 @@ element evaluate(AST *a) {
         int ir,il;
         r=evaluate(child(a,0));
         l=evaluate(child(a,1));
-       //  cout<<"inside < r.val "<<r.value<<" l.val "<<l.value<<endl;
         if (l.type=="int"){
             il=stoi(l.value);
         }
@@ -461,10 +442,8 @@ element evaluate(AST *a) {
             ir=stoi(r.value);
         }
         else ir=var[r.value];
-        //cout<<"il: "<<il<<" ir:"<<ir<<endl;
         if (ir<il)e.value="true";
         else e.value="false";
-        //cout<<"end < with e.value:"<<e.value<<endl;
 
     }
     else if (a->kind==">"){
@@ -501,10 +480,8 @@ element evaluate(AST *a) {
         else ir=var[r.value];
         if (il==ir)e.value="true";
         else e.value="false";
-      //  cout<<"il: "<<il<<" ir:"<<ir<<endl;
     }
     else if (a->kind=="Wellformed"){
-        // cout<<"entro en wellformed"<<endl;
         e.type="bool";
         element r=evaluate(child(a,0));
         if (r.type=="mount") {
@@ -512,12 +489,9 @@ element evaluate(AST *a) {
             else e.value="false";
         }
         else if (r.type=="id"){
-            //cout<<"well con id"<<endl;
             if (wellformed(mont[r.value]))e.value="true";
             else e.value="false";
         }
-        //if (wellformed(child(a,0)->text))e.value="true";
-        // cout<<"salgo de well con valor"<<e.value<<endl;
     }
     else if (a->kind=="Match"){
         e.type="bool";
@@ -529,7 +503,6 @@ element evaluate(AST *a) {
         element r=evaluate(child(a,0));
         if (r.type=="mount") e.value=to_string(height(r.value));
         else if (r.type=="id")e.value=to_string(height(mont[r.value]));
-        // cout<<"heigh: "<<e.value<<endl;
     }
     else{//resto de kinds con los que no hago nada especial
         e.value=a->kind;
@@ -545,7 +518,6 @@ void execute(AST *a) {
         AST *b=child(a,i);
         if (b->kind=="is"){
             element e=evaluate(child(b,1));
-            //cout<<e.type<<" valor:"<<e.value<<endl;
             if (e.type=="mount"){
                  mont[child(b,0)->text]=e.value;
             }
@@ -556,7 +528,6 @@ void execute(AST *a) {
         else if (b->kind=="Draw"){
             element e=evaluate(child(b,0));
             if (e.type=="id") {
-               // cout<<"ID to draw: "<<e.value<<" Value: "<<mont[e.value]<<endl;
                 draw(mont[e.value]);
             }
             else if (e.type=="mount")  draw(e.value);
@@ -572,20 +543,15 @@ void execute(AST *a) {
         }
 
         else if (b->kind=="if"){
-            //cout<<"ghi"<<endl;
             element e= evaluate(child(b,0));
-            //cout<<e.type<<" vool value "<< e.value<<endl;
              if (e.value=="true"){
                 execute(child(b,1));
             }
         }
         else if (b->kind=="while"){
             while ((evaluate(child(b,0))).value=="true"){
-                //cout<<"inside while"<<endl;
                 execute(child(b,1));
-                //cout<<"executed while"<<endl;
             }
-          //  cout<<"khe"<<endl;
         }
     }
 }
@@ -595,7 +561,6 @@ int main() {
   ANTLR(mountains(&root), stdin);
   ASTPrint(root);
   execute(root);
-   // cout<<"se ejecuta"<<endl;
   map<string,string>::iterator it;
    for (it=mont.begin();it!=mont.end();it++){
         if (wellformed(it->second)){
@@ -663,7 +628,6 @@ mountains: (assign | condic | draw | iter | complete)* << #0 = createASTlist(_si
 assign: ID IS^ (expr|pv|varas);
 //separado para tener la jerarquia en el arbol
 expr: (part|other) (CONC^ (part2|other|pv))*;// una sin concat y las siguientes si
-//todo: esto... me peta con k is 1 pero solo si es la ultima instruccion
 part: NUM ((STAR^ (UP|DOWN|PEAK))|(PLUS^ (NUM|ID))*);   //numero,estrella y tipo de parte
 part2:NUM STAR^ (UP|DOWN|PEAK);
 
@@ -673,7 +637,7 @@ varas:ID (PLUS^ (ID|NUM))*;
 other: SHARP! ID; // #Mx
 
 pv: (PEAK^|VALLEY^)LPAR! (NUM|calc) COMA! (NUM|calc) COMA! (NUM|calc) RPAR!; //peak valley
-calc:ID (PLUS^ (NUM|ID))*; //todo no acepta suma de solo numeros
+calc:ID (PLUS^ (NUM|ID))*;
 
 func: (MATCH^ m|WELL^ w);//funciones que devuelven bool
 m: LPAR! other COMA! other RPAR!; //match
@@ -687,10 +651,7 @@ iter: ITER^ LPAR!  boole RPAR! mountains ENDWHILE!;
 
 
 
-/*
-boole: ( (NOT^|) booleaux1) ( (AND^|OR^) (NOT^|) booleaux1)*;
-booleaux1: func|heigh (LESS^|MORE^|EQUALS^) NUM;
-*/
+
 
 boole:  booland (OR^ booland)*;
 booland:  boolnot (AND^ boolnot)*;
@@ -700,4 +661,4 @@ boolatom: func|heigh (LESS^|MORE^|EQUALS^) NUM;
 
 draw: DRAW^ LPAR! expr RPAR!;
 complete: COMPLETE^ LPAR! ID RPAR!;
-//git test re
+
